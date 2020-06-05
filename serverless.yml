@@ -1,0 +1,47 @@
+service: drug-lord-of-armavir-bot
+
+provider:
+  name: aws
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 's3:GetObject'
+      Resource:
+        Fn::Join:
+          - ''
+          - - 'arn:aws:s3:::'
+            - ${self:provider.environment.ASSETS_BUCKET}
+            - '/*'
+  runtime: go1.x
+  environment:
+    TELEGRAM_TOKEN: ${file(./serverless.env.yml):TELEGRAM_TOKEN, ''}
+    ASSETS_BUCKET: ${file(./serverless.env.yml):ASSETS_BUCKET, ''}
+
+functions:
+  webhook:
+    handler: bin/webhook
+    events:
+      - http: POST /
+
+  setWebhook:
+    handler: bin/setWebhook
+    events:
+      - http: POST /set-webhook
+
+package:
+  exclude:
+    - ./**
+  include:
+    - ./bin/**
+
+plugins:
+    - serverless-s3-deploy
+
+custom:
+  assets:
+    targets:
+      - bucket: ${self:provider.environment.ASSETS_BUCKET}
+        empty: true
+        files:
+        - source: ./assets/
+          globs: '*'

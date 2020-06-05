@@ -1,0 +1,10 @@
+node_modules/
+
+# Binary executables
+bin/
+
+# Environment variables for serverless framework
+serverless.env.yml
+
+# Deployment artifacts
+.serverless/
