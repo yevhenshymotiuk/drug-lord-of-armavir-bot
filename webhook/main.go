@@ -78,6 +78,7 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	}
 	voice := tgbotapi.NewVoiceUpload(update.Message.Chat.ID, voiceFile)
 	voice.Duration = 1
+	voice.ReplyToMessageID = update.Message.MessageID
 
 	_, err = bot.Send(voice)
 	if err != nil {
