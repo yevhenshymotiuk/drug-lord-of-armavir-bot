@@ -2,9 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"os"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -22,7 +25,7 @@ var okResp = Response{
 	Body:            "Ok",
 }
 
-func getFileFromS3Bucket(bucketName string, fileName string) *s3.GetObjectOutput {
+func getObjectFromS3Bucket(bucketName string, objectName string) *s3.GetObjectOutput {
 	sess, _ := session.NewSession(&aws.Config{
 		Region: aws.String("eu-north-1"),
 	})
@@ -31,11 +34,11 @@ func getFileFromS3Bucket(bucketName string, fileName string) *s3.GetObjectOutput
 
 	resp, err := client.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(bucketName),
-		Key:    aws.String(fileName),
+		Key:    aws.String(objectName),
 	})
 
 	if err != nil {
-		log.Fatalf("Unable to get file %q, %v", fileName, err)
+		log.Fatalf("Unable to get file %q, %v", objectName, err)
 	}
 
 	return resp
@@ -62,9 +65,14 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	// msg.ReplyToMessageID = update.Message.MessageID
 
 	// Send "A, da" voice message
-	resp := getFileFromS3Bucket(os.Getenv("ASSETS_BUCKET"), "a-da.ogg")
+	s := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(s)
+
+	s3ObjectName := fmt.Sprintf("a-da-%d.ogg", r.Intn(3))
+	resp := getObjectFromS3Bucket(
+		os.Getenv("ASSETS_BUCKET"), s3ObjectName)
 	voiceFile := tgbotapi.FileReader{
-		Name:   "a-da.ogg",
+		Name:   s3ObjectName,
 		Reader: io.Reader(resp.Body),
 		Size:   -1,
 	}
