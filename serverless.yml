@@ -39,6 +39,7 @@ plugins:
 
 custom:
   assets:
+    auto: true
     targets:
       - bucket: ${self:provider.environment.ASSETS_BUCKET}
         empty: true
