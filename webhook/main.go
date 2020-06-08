@@ -44,6 +44,18 @@ func getObjectFromS3Bucket(bucketName string, objectName string) *s3.GetObjectOu
 	return resp
 }
 
+func s3ObjectToAudioFile(bucketName string, objectName string) tgbotapi.FileReader {
+	resp := getObjectFromS3Bucket(
+		bucketName, objectName)
+	audioFile := tgbotapi.FileReader{
+		Name:   objectName,
+		Reader: io.Reader(resp.Body),
+		Size:   -1,
+	}
+
+	return audioFile
+}
+
 func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
 	if err != nil {
@@ -61,26 +73,27 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 		return okResp, nil
 	}
 
-	// msg := tgbotapi.NewMessage(update.Message.Chat.ID, "A, da?")
-	// msg.ReplyToMessageID = update.Message.MessageID
+	var msg tgbotapi.VoiceConfig
+	assetsBucket := os.Getenv("ASSETS_BUCKET")
 
-	// Send "A, da" voice message
-	s := rand.NewSource(time.Now().UnixNano())
-	r := rand.New(s)
+	if update.Message.Text == "/start" {
+		// Send greeting voice message
+		audioFile := s3ObjectToAudioFile(assetsBucket, "greeting.ogg")
+		msg = tgbotapi.NewVoiceUpload(update.Message.Chat.ID, audioFile)
+		msg.Duration = 1
+	} else {
+		// Send "A, da" voice message
+		s := rand.NewSource(time.Now().UnixNano())
+		r := rand.New(s)
 
-	s3ObjectName := fmt.Sprintf("a-da-%d.ogg", r.Intn(3))
-	resp := getObjectFromS3Bucket(
-		os.Getenv("ASSETS_BUCKET"), s3ObjectName)
-	voiceFile := tgbotapi.FileReader{
-		Name:   s3ObjectName,
-		Reader: io.Reader(resp.Body),
-		Size:   -1,
+		s3ObjectName := fmt.Sprintf("a-da-%d.ogg", r.Intn(3))
+		audioFile := s3ObjectToAudioFile(assetsBucket, s3ObjectName)
+		msg = tgbotapi.NewVoiceUpload(update.Message.Chat.ID, audioFile)
+		msg.Duration = 1
+		msg.ReplyToMessageID = update.Message.MessageID
 	}
-	voice := tgbotapi.NewVoiceUpload(update.Message.Chat.ID, voiceFile)
-	voice.Duration = 1
-	voice.ReplyToMessageID = update.Message.MessageID
 
-	_, err = bot.Send(voice)
+	_, err = bot.Send(msg)
 	if err != nil {
 		log.Panic(err)
 	}
