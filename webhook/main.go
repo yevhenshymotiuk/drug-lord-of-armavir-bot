@@ -76,7 +76,7 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	var msg tgbotapi.VoiceConfig
 	assetsBucket := os.Getenv("ASSETS_BUCKET")
 
-	if update.Message.Text == "/start" {
+	if update.Message.Command() == "start" {
 		// Send greeting voice message
 		audioFile := s3ObjectToAudioFile(assetsBucket, "greeting.ogg")
 		msg = tgbotapi.NewVoiceUpload(update.Message.Chat.ID, audioFile)
