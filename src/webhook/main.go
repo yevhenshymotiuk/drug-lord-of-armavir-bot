@@ -1,4 +1,4 @@
-package main
+package webhook
 
 import (
 	"encoding/json"
@@ -15,11 +15,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/yevhenshymotiuk/drug-lord-of-armavir-bot/apigateway"
 )
 
-type response events.APIGatewayProxyResponse
-
-var okResp = response{
+var okResp = apigateway.Response{
 	StatusCode:      200,
 	IsBase64Encoded: false,
 	Body:            "Ok",
@@ -56,7 +55,7 @@ func s3ObjectToAudioFile(bucketName string, objectName string) tgbotapi.FileRead
 	return audioFile
 }
 
-func handler(request events.APIGatewayProxyRequest) (response, error) {
+func handler(request events.APIGatewayProxyRequest) (apigateway.Response, error) {
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
 	if err != nil {
 		log.Panic(err)
