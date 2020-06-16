@@ -17,9 +17,9 @@ import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-type Response events.APIGatewayProxyResponse
+type response events.APIGatewayProxyResponse
 
-var okResp = Response{
+var okResp = response{
 	StatusCode:      200,
 	IsBase64Encoded: false,
 	Body:            "Ok",
@@ -56,7 +56,7 @@ func s3ObjectToAudioFile(bucketName string, objectName string) tgbotapi.FileRead
 	return audioFile
 }
 
-func Handler(request events.APIGatewayProxyRequest) (Response, error) {
+func handler(request events.APIGatewayProxyRequest) (response, error) {
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
 	if err != nil {
 		log.Panic(err)
@@ -102,5 +102,5 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 }
 
 func main() {
-	lambda.Start(Handler)
+	lambda.Start(handler)
 }
