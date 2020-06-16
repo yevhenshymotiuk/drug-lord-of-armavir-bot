@@ -13,7 +13,9 @@ import (
 	"github.com/yevhenshymotiuk/drug-lord-of-armavir-bot/apigateway"
 )
 
-func handler(request events.APIGatewayProxyRequest) (apigateway.Response, error) {
+func handler(
+	request events.APIGatewayProxyRequest,
+) (apigateway.Response, error) {
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
 	if err != nil {
 		log.Panic(err)
@@ -22,7 +24,8 @@ func handler(request events.APIGatewayProxyRequest) (apigateway.Response, error)
 	url := fmt.Sprintf(
 		"https://%s/%s/",
 		request.Headers["Host"],
-		request.RequestContext.Stage)
+		request.RequestContext.Stage,
+	)
 	_, err = bot.SetWebhook(tgbotapi.NewWebhook(url))
 	if err != nil {
 		log.Fatal(err)
@@ -38,9 +41,9 @@ func handler(request events.APIGatewayProxyRequest) (apigateway.Response, error)
 
 	var buf bytes.Buffer
 
-	body, err := json.Marshal(map[string]interface{}{
-		"message": "Webhook was successfully set!",
-	})
+	body, err := json.Marshal(
+		map[string]interface{}{"message": "Webhook was successfully set!"},
+	)
 	if err != nil {
 		return apigateway.Response{StatusCode: 404}, err
 	}
@@ -50,9 +53,7 @@ func handler(request events.APIGatewayProxyRequest) (apigateway.Response, error)
 		StatusCode:      200,
 		IsBase64Encoded: false,
 		Body:            buf.String(),
-		Headers: map[string]string{
-			"Content-Type": "application/json",
-		},
+		Headers:         map[string]string{"Content-Type": "application/json"},
 	}
 
 	return resp, nil

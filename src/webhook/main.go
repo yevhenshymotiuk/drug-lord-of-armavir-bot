@@ -24,17 +24,20 @@ var okResp = apigateway.Response{
 	Body:            "Ok",
 }
 
-func getObjectFromS3Bucket(bucketName string, objectName string) *s3.GetObjectOutput {
-	sess, _ := session.NewSession(&aws.Config{
-		Region: aws.String("eu-north-1"),
-	})
+func getObjectFromS3Bucket(
+	bucketName string,
+	objectName string,
+) *s3.GetObjectOutput {
+	sess, _ := session.NewSession(&aws.Config{Region: aws.String("eu-north-1")})
 
 	client := s3.New(sess)
 
-	resp, err := client.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(bucketName),
-		Key:    aws.String(objectName),
-	})
+	resp, err := client.GetObject(
+		&s3.GetObjectInput{
+			Bucket: aws.String(bucketName),
+			Key:    aws.String(objectName),
+		},
+	)
 
 	if err != nil {
 		log.Fatalf("Unable to get file %q, %v", objectName, err)
@@ -43,9 +46,11 @@ func getObjectFromS3Bucket(bucketName string, objectName string) *s3.GetObjectOu
 	return resp
 }
 
-func s3ObjectToAudioFile(bucketName string, objectName string) tgbotapi.FileReader {
-	resp := getObjectFromS3Bucket(
-		bucketName, objectName)
+func s3ObjectToAudioFile(
+	bucketName string,
+	objectName string,
+) tgbotapi.FileReader {
+	resp := getObjectFromS3Bucket(bucketName, objectName)
 	audioFile := tgbotapi.FileReader{
 		Name:   objectName,
 		Reader: io.Reader(resp.Body),
@@ -55,7 +60,9 @@ func s3ObjectToAudioFile(bucketName string, objectName string) tgbotapi.FileRead
 	return audioFile
 }
 
-func handler(request events.APIGatewayProxyRequest) (apigateway.Response, error) {
+func handler(
+	request events.APIGatewayProxyRequest,
+) (apigateway.Response, error) {
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
 	if err != nil {
 		log.Panic(err)
