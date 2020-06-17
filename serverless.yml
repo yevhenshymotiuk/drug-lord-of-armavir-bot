@@ -24,7 +24,7 @@ functions:
       - http: POST /
 
   setWebhook:
-    handler: bin/setWebhook
+    handler: bin/setwebhook
     events:
       - http: POST /set-webhook
 
