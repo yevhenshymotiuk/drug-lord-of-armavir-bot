@@ -1,4 +1,4 @@
-package setwebhook
+package main
 
 import (
 	"bytes"
