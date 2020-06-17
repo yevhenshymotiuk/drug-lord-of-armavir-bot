@@ -4,8 +4,8 @@ GOBUILD=GOOS=linux $(GOCMD) build -ldflags="-d -s -w" -tags netgo -installsuffix
 .PHONY: build clean deploy
 
 build:
-	$(GOBUILD) -o bin/setwebhook src/setwebhook/main.go
-	$(GOBUILD) -o bin/webhook src/webhook/main.go
+	$(GOBUILD) -o bin/setwebhook setwebhook/main.go
+	$(GOBUILD) -o bin/webhook webhook/main.go
 
 clean:
 	$(GOCMD) clean
