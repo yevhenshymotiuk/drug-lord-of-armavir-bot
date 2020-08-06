@@ -15,14 +15,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/yevhenshymotiuk/drug-lord-of-armavir-bot/apigateway"
+	"github.com/yevhenshymotiuk/telegram-lambda-helpers/apigateway"
 )
-
-var okResp = apigateway.Response{
-	StatusCode:      200,
-	IsBase64Encoded: false,
-	Body:            "Ok",
-}
 
 func getObjectFromS3Bucket(
 	bucketName string,
@@ -65,18 +59,18 @@ func handler(
 ) (apigateway.Response, error) {
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
 	if err != nil {
-		log.Panic(err)
+		return apigateway.Response404, err
 	}
 
 	update := tgbotapi.Update{}
 
-	bodyUnmarshalErr := json.Unmarshal([]byte(request.Body), &update)
-	if bodyUnmarshalErr != nil {
-		log.Panic(bodyUnmarshalErr)
+	err = json.Unmarshal([]byte(request.Body), &update)
+	if err != nil {
+		return apigateway.Response404, err
 	}
 
 	if update.Message == nil { // ignore any non-Message Updates
-		return okResp, nil
+		return apigateway.Response200, nil
 	}
 
 	var msg tgbotapi.VoiceConfig
@@ -101,10 +95,10 @@ func handler(
 
 	_, err = bot.Send(msg)
 	if err != nil {
-		log.Panic(err)
+		return apigateway.Response404, err
 	}
 
-	return okResp, nil
+	return apigateway.Response200, nil
 }
 
 func main() {
